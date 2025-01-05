@@ -30,6 +30,29 @@ const Page: React.FC = () => {
         }
         const data = await response.json();
         setPosts(data.contents as Post[]);
+        /*const requestUrl = "/api/posts";
+        const res = await fetch(requestUrl, {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        // レスポンスのステータスコードが200以外の場合 (カテゴリのフェッチに失敗した場合)
+        if (!res.ok) {
+          setPosts(null);
+          throw new Error(`${res.status}: ${res.statusText}`); // -> catch節に移動
+        }
+
+        // レスポンスのボディをJSONとして読み取りカテゴリ配列 (State) にセット
+        const apiResBody = (await res.json()) as Post[];
+        setPosts(
+          apiResBody.map((body) => ({
+            id: body.id,
+            title: body.title,
+            content: body.content,
+            createdAt: body.createdAt,
+            categories: body.categories,
+          }))
+        );*/
       } catch (e) {
         setFetchError(
           e instanceof Error ? e.message : "予期せぬエラーが発生しました"
