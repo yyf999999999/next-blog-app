@@ -1,9 +1,22 @@
 "use client";
 import { useState, useEffect } from "react";
 import type { Post } from "@/app/_types/Post";
+import type { Category } from "@/app/_types/Category";
 import PostSummary from "@/app/_components/PostSummary";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import dayjs from "dayjs";
+import { twMerge } from "tailwind-merge";
+import DOMPurify from "isomorphic-dompurify";
+import Link from "next/link";
+
+type PostApiResponse = {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  categories: { category: Category }[];
+};
 
 const Page: React.FC = () => {
   const [posts, setPosts] = useState<Post[] | null>(null);
@@ -29,7 +42,7 @@ const Page: React.FC = () => {
         }
 
         // レスポンスのボディをJSONとして読み取りカテゴリ配列 (State) にセット
-        const apiResBody = (await res.json()) as Post[];
+        const apiResBody = (await res.json()) as PostApiResponse[];
         setPosts(
           apiResBody.map((body) => ({
             id: body.id,
@@ -37,8 +50,11 @@ const Page: React.FC = () => {
             content: body.content,
             coverImage: { url: "", width: 0, height: 0 },
             createdAt: body.createdAt,
-            categories: body.categories,
-          }))
+            categories: body.categories.map((c) => ({
+              id: c.category.id,
+              name: c.category.name,
+            })),
+          })) as Post[]
         );
       } catch (e) {
         setFetchError(
@@ -62,13 +78,46 @@ const Page: React.FC = () => {
     );
   }
 
+  const dtFmt = "YYYY-MM-DD";
+
   return (
     <main>
       <div className="mb-2 text-2xl font-bold">投稿記事の管理</div>
       <div className="space-y-3">
-        {posts.map((post) => (
-          <PostSummary key={post.id} post={post} />
-        ))}
+        {posts.map((post) => {
+          const safeHTML = DOMPurify.sanitize(post.content, {
+            ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "br"],
+          });
+          return (
+            <div className="border border-slate-400 p-3" key={post.id}>
+              <div className="flex items-center justify-between">
+                <div>{dayjs(post.createdAt).format(dtFmt)}</div>
+                <div className="flex space-x-1.5">
+                  {post.categories.map((category) => (
+                    <div
+                      key={category.id}
+                      className={twMerge(
+                        "rounded-md px-2 py-0.5",
+                        "text-xs font-bold",
+                        "border border-slate-400 text-slate-500"
+                      )}
+                    >
+                      {category.name}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* ファイルの先頭で「Linkコンポーネント」のインポートが必要です */}
+              <Link href={`/admin/posts/${post.id}`}>
+                <div className="mb-1 text-lg font-bold">{post.title}</div>
+                <div
+                  className="line-clamp-3"
+                  dangerouslySetInnerHTML={{ __html: safeHTML }}
+                />
+              </Link>
+            </div>
+          );
+        })}
       </div>
     </main>
   );
