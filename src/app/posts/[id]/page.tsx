@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation"; // ◀ 注目
 
 import type { Post } from "@/app/_types/Post";
+import type { Category } from "@/app/_types/Category";
 import dummyPosts from "@/app/_mocks/dummyPosts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
@@ -12,9 +13,20 @@ import { twMerge } from "tailwind-merge";
 
 import DOMPurify from "isomorphic-dompurify";
 
+type PostApiResponse = {
+  id: string;
+  title: string;
+  content: string;
+  coverImageURL: string;
+  createdAt: string;
+  updatedAt: string;
+  categories: Category[];
+};
+
 // 投稿記事の詳細表示 /posts/[id]
 const Page: React.FC = () => {
   const [post, setPost] = useState<Post | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // 動的ルートパラメータから 記事id を取得 （URL:/posts/[id]）
@@ -25,16 +37,41 @@ const Page: React.FC = () => {
   useEffect(() => {
     // 本来はウェブAPIを叩いてデータを取得するが、まずはモックデータを使用
     // (ネットからのデータ取得をシミュレートして１秒後にデータをセットする)
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      console.log("ウェブAPIからデータを取得しました (虚言)");
-      // dummyPosts から id に一致する投稿を取得してセット
-      setPost(dummyPosts.find((post) => post.id === id) || null);
-      setIsLoading(false);
-    }, 1000);
+    const fetchPost = async () => {
+      setIsLoading(true);
+      try {
+        const requestUrl = `/api/posts/${id}`;
+        const res = await fetch(requestUrl, {
+          method: "GET",
+          cache: "no-store",
+        });
 
-    // データ取得の途中でページ遷移したときにタイマーを解除する処理
-    return () => clearTimeout(timer);
+        // レスポンスのステータスコードが200以外の場合 (カテゴリのフェッチに失敗した場合)
+        if (!res.ok) {
+          throw new Error(`${res.status}: ${res.statusText}`); // -> catch節に移動
+        }
+
+        // レスポンスのボディをJSONとして読み取りカテゴリ配列 (State) にセット
+        const apiResBody = (await res.json()) as PostApiResponse;
+        console.log(apiResBody);
+        setPost({
+          ...apiResBody,
+          coverImage: {
+            url: apiResBody.coverImageURL,
+            width: 0,
+            height: 0,
+          },
+          coverImageURL: undefined,
+        } as Post);
+      } catch (e) {
+        setFetchError(
+          e instanceof Error ? e.message : "予期せぬエラーが発生しました"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPost();
   }, [id]);
 
   // 投稿データの取得中は「Loading...」を表示

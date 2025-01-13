@@ -1,9 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
 import type { Post } from "@/app/_types/Post";
+import type { Category } from "@/app/_types/Category";
 import PostSummary from "@/app/_components/PostSummary";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+
+type PostApiResponse = {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  categories: { category: Category }[];
+};
 
 const Page: React.FC = () => {
   const [posts, setPosts] = useState<Post[] | null>(null);
@@ -17,7 +26,7 @@ const Page: React.FC = () => {
     const fetchPosts = async () => {
       try {
         // microCMS から記事データを取得
-        const requestUrl = `${apiBaseEp}/posts`;
+        /*const requestUrl = `${apiBaseEp}/posts`;
         const response = await fetch(requestUrl, {
           method: "GET",
           cache: "no-store",
@@ -29,8 +38,9 @@ const Page: React.FC = () => {
           throw new Error("データの取得に失敗しました");
         }
         const data = await response.json();
-        setPosts(data.contents as Post[]);
-        /*const requestUrl = "/api/posts";
+        console.log(data);
+        setPosts(data.contents as Post[]);*/
+        const requestUrl = "/api/posts";
         const res = await fetch(requestUrl, {
           method: "GET",
           cache: "no-store",
@@ -43,16 +53,20 @@ const Page: React.FC = () => {
         }
 
         // レスポンスのボディをJSONとして読み取りカテゴリ配列 (State) にセット
-        const apiResBody = (await res.json()) as Post[];
+        const apiResBody = (await res.json()) as PostApiResponse[];
         setPosts(
           apiResBody.map((body) => ({
             id: body.id,
             title: body.title,
             content: body.content,
+            coverImage: { url: "", width: 0, height: 0 },
             createdAt: body.createdAt,
-            categories: body.categories,
-          }))
-        );*/
+            categories: body.categories.map((c) => ({
+              id: c.category.id,
+              name: c.category.name,
+            })),
+          })) as Post[]
+        );
       } catch (e) {
         setFetchError(
           e instanceof Error ? e.message : "予期せぬエラーが発生しました"
