@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import type { Post } from "@/app/_types/Post";
 import type { Category } from "@/app/_types/Category";
-import PostSummary from "@/app/_components/PostSummary";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
@@ -20,6 +19,7 @@ type PostApiResponse = {
 
 const Page: React.FC = () => {
   const [posts, setPosts] = useState<Post[] | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   // 環境変数から「APIキー」と「エンドポイント」を取得
@@ -65,6 +65,43 @@ const Page: React.FC = () => {
     fetchPosts();
   }, [apiBaseEp, apiKey]);
 
+  const handleDelete = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    post: Post
+  ) => {
+    e.preventDefault(); // この処理をしないとページがリロードされるので注意
+
+    setIsSubmitting(true);
+
+    // ▼▼ 追加 ウェブAPI (/api/admin/posts) にPOSTリクエストを送信する処理
+    try {
+      const requestUrl = `/api/admin/posts/${post.id}`;
+      const res = await fetch(requestUrl, {
+        method: "DELETE",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`); // -> catch節に移動
+      }
+
+      const postResponse = await res.json();
+      setIsSubmitting(false);
+    } catch (error) {
+      const errorMsg =
+        error instanceof Error
+          ? `投稿記事のPOSTリクエストに失敗しました\n${error.message}`
+          : `予期せぬエラーが発生しました\n${error}`;
+      console.error(errorMsg);
+      window.alert(errorMsg);
+      setIsSubmitting(false);
+    }
+    window.location.reload();
+  };
+
   if (fetchError) {
     return <div>{fetchError}</div>;
   }
@@ -82,7 +119,33 @@ const Page: React.FC = () => {
 
   return (
     <main>
-      <div className="mb-2 text-2xl font-bold">投稿記事の管理</div>
+      {isSubmitting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="flex items-center rounded-lg bg-white px-8 py-4 shadow-lg">
+            <FontAwesomeIcon
+              icon={faSpinner}
+              className="mr-2 animate-spin text-gray-500"
+            />
+            <div className="flex items-center text-gray-500">処理中...</div>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-2">
+        <div className="text-2xl font-bold">投稿記事の管理</div>
+      </div>
+      <Link href={`/admin/posts/new`} className="mb-2 flex justify-end">
+        <button
+          type="button"
+          className={twMerge(
+            "rounded-md px-5 py-1 font-bold",
+            "bg-blue-500 text-white hover:bg-blue-600",
+            "disabled:cursor-not-allowed"
+          )}
+        >
+          新規作成
+        </button>
+      </Link>
       <div className="space-y-3">
         {posts.map((post) => {
           const safeHTML = DOMPurify.sanitize(post.content, {
@@ -107,14 +170,38 @@ const Page: React.FC = () => {
                   ))}
                 </div>
               </div>
-              {/* ファイルの先頭で「Linkコンポーネント」のインポートが必要です */}
-              <Link href={`/admin/posts/${post.id}`}>
-                <div className="mb-1 text-lg font-bold">{post.title}</div>
-                <div
-                  className="line-clamp-3"
-                  dangerouslySetInnerHTML={{ __html: safeHTML }}
-                />
-              </Link>
+              <div className="mb-1 text-lg font-bold">{post.title}</div>
+              <div
+                className="line-clamp-3"
+                dangerouslySetInnerHTML={{ __html: safeHTML }}
+              />
+              <div className="flex justify-end space-x-2">
+                <Link href={`/admin/posts/${post.id}`}>
+                  <button
+                    type="button"
+                    className={twMerge(
+                      "rounded-md px-5 py-1 font-bold",
+                      "bg-indigo-500 text-white hover:bg-indigo-600",
+                      "disabled:cursor-not-allowed"
+                    )}
+                  >
+                    編集
+                  </button>
+                </Link>
+                <button
+                  type="button"
+                  className={twMerge(
+                    "rounded-md px-5 py-1 font-bold",
+                    "bg-red-500 text-white hover:bg-red-600",
+                    "disabled:cursor-not-allowed"
+                  )}
+                  onClick={(e) => {
+                    handleDelete(e, post);
+                  }}
+                >
+                  削除
+                </button>
+              </div>
             </div>
           );
         })}

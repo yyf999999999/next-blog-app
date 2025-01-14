@@ -20,7 +20,7 @@ type PostApiResponse = {
   coverImageURL: string;
   createdAt: string;
   updatedAt: string;
-  categories: Category[];
+  categories: { category: Category }[];
 };
 
 // 投稿記事の詳細表示 /posts/[id]
@@ -55,13 +55,15 @@ const Page: React.FC = () => {
         const apiResBody = (await res.json()) as PostApiResponse;
         console.log(apiResBody);
         setPost({
-          ...apiResBody,
-          coverImage: {
-            url: apiResBody.coverImageURL,
-            width: 0,
-            height: 0,
-          },
-          coverImageURL: undefined,
+          id: apiResBody.id,
+          title: apiResBody.title,
+          content: apiResBody.content,
+          coverImage: { url: apiResBody.coverImageURL, width: 0, height: 0 },
+          createdAt: apiResBody.createdAt,
+          categories: apiResBody.categories.map((c) => ({
+            id: c.category.id,
+            name: c.category.name,
+          })),
         } as Post);
       } catch (e) {
         setFetchError(
