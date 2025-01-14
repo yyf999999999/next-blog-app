@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useParams, useSearchParams } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
@@ -20,11 +21,14 @@ type CategoryApiResponse = {
 const Page: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [fetchErrorMsg, setFetchErrorMsg] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryNameError, setNewCategoryNameError] = useState("");
 
   const { id } = useParams();
+  const router = useRouter();
+
   // カテゴリ配列 (State)。取得中と取得失敗時は null、既存カテゴリが0個なら []
   const [categories, setCategories] = useState<Category[] | null>(null);
 
@@ -108,7 +112,7 @@ const Page: React.FC = () => {
         throw new Error(`${res.status}: ${res.statusText}`); // -> catch節に移動
       }
 
-      window.location.href = "/admin/categories/new";
+      router.push("/admin/categories");
     } catch (error) {
       const errorMsg =
         error instanceof Error
@@ -142,6 +146,7 @@ const Page: React.FC = () => {
 
       setNewCategoryName("");
       await fetchCategories(); // カテゴリの一覧を再取得
+      router.push("/admin/categories");
     } catch (error) {
       const errorMsg =
         error instanceof Error

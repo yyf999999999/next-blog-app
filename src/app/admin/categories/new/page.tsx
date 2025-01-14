@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
@@ -25,6 +26,7 @@ const Page: React.FC = () => {
 
   // カテゴリ配列 (State)。取得中と取得失敗時は null、既存カテゴリが0個なら []
   const [categories, setCategories] = useState<Category[] | null>(null);
+  const router = useRouter();
 
   // ウェブAPI (/api/categories) からカテゴリの一覧をフェッチする関数の定義
   const fetchCategories = async () => {
@@ -110,6 +112,7 @@ const Page: React.FC = () => {
 
       setNewCategoryName("");
       await fetchCategories(); // カテゴリの一覧を再取得
+      router.push("/admin/categories");
     } catch (error) {
       const errorMsg =
         error instanceof Error
