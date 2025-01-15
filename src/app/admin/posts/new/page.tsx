@@ -102,7 +102,16 @@ const Page: React.FC = () => {
 
   const updateNewContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     // ここに本文のバリデーション処理を追加する
-    setNewContent(e.target.value);
+    const cont = e.target.value.split("\n");
+    setNewContent(
+      cont
+        .map((line, index) => {
+          if (cont.length - 1 === index) return line;
+          else if (line.slice(-1) !== ">") return `${line}<br>\n`;
+          else return `${line}\n`;
+        })
+        .join("")
+    );
   };
 
   const updateNewCoverImageURL = (e: React.ChangeEvent<HTMLInputElement>) => {
