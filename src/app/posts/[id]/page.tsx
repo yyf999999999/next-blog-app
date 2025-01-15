@@ -6,6 +6,7 @@ import type { Post } from "@/app/_types/Post";
 import type { Category } from "@/app/_types/Category";
 import dummyPosts from "@/app/_mocks/dummyPosts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import dayjs from "dayjs";
@@ -22,6 +23,12 @@ type PostApiResponse = {
   updatedAt: string;
   categories: { category: Category }[];
 };
+
+declare global {
+  interface Window {
+    copyToClipboard: (preId: string) => void;
+  }
+}
 
 // 投稿記事の詳細表示 /posts/[id]
 const Page: React.FC = () => {
@@ -92,9 +99,38 @@ const Page: React.FC = () => {
   }
 
   // HTMLコンテンツのサニタイズ
-  const safeHTML = DOMPurify.sanitize(post.content, {
-    ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "br"],
+
+  window.copyToClipboard = (preId: string) => {
+    const preElement = document.getElementById(preId);
+    if (preElement) {
+      const text = preElement.innerText || preElement.textContent;
+
+      if (text) {
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            alert("コピーしました！");
+          })
+          .catch((err) => {
+            alert("コピーに失敗しました。");
+            console.error(err);
+          });
+      } else {
+        alert("コピーするテキストがありません。");
+      }
+    }
+  };
+  let safeHTML = DOMPurify.sanitize(post.content, {
+    ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "br", "pre"],
   });
+  let programCount = 0;
+  safeHTML = safeHTML.replace(/program-/g, () => {
+    programCount++;
+    return `
+  <div class="flex justify-end"><button class="bg-gray-300 rounded-md border border-gray-800 px-1" onclick="copyToClipboard('program-${programCount}')">コピー</button></div>
+  <pre id="program-${programCount}" class="bg-black text-white p-4 border border-gray-300 rounded-md">`;
+  });
+  safeHTML = safeHTML.replace(/-program/g, "</pre>");
 
   return (
     <main>

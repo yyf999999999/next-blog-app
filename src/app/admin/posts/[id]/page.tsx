@@ -145,21 +145,34 @@ const Page: React.FC = () => {
 
   const updateNewContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     // ここに本文のバリデーション処理を追加する
-    const cont = e.target.value.split("\n");
-    setNewContent(
-      cont
-        .map((line, index) => {
-          if (cont.length - 1 === index) return line;
-          else if (line.slice(-1) !== ">") return `${line}<br>\n`;
-          else return `${line}\n`;
-        })
-        .join("")
-    );
+    setNewContent(e.target.value);
   };
 
   const updateNewCoverImageURL = (e: React.ChangeEvent<HTMLInputElement>) => {
     // ここにカバーイメージURLのバリデーション処理を追加する
     setNewCoverImageURL(e.target.value);
+  };
+
+  const autoBR = () => {
+    const cont = newContent.split("\n");
+    const startPres = cont
+      .map((element, index) => (element.includes("program-") ? index : -1))
+      .filter((index) => index !== -1);
+    const endPres = cont
+      .map((element, index) => (element.includes("-program") ? index : -1))
+      .filter((index) => index !== -1);
+    const pres = startPres.map((start, i) => [start, endPres[i]]);
+    setNewContent(
+      cont
+        .map((line, index) => {
+          if (cont.length - 1 === index) return line;
+          else if (pres.some(([start, end]) => index >= start && index <= end))
+            return `${line}\n`;
+          else if (line.slice(-4) !== "<br>") return `${line}<br>\n`;
+          else return `${line}\n`;
+        })
+        .join("")
+    );
   };
 
   // フォームの送信処理
@@ -299,6 +312,20 @@ const Page: React.FC = () => {
             placeholder="本文を記入してください"
             required
           />
+        </div>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            className={twMerge(
+              "rounded-md px-5 py-1 font-bold",
+              "bg-indigo-500 text-white hover:bg-indigo-600",
+              "disabled:cursor-not-allowed"
+            )}
+            onClick={autoBR}
+            disabled={isSubmitting}
+          >
+            改行反映
+          </button>
         </div>
 
         <div className="space-y-1">
