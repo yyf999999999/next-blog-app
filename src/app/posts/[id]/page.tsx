@@ -124,13 +124,13 @@ const Page: React.FC = () => {
     ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "br", "pre"],
   });
   let programCount = 0;
-  safeHTML = safeHTML.replace(/program-/g, () => {
+  safeHTML = safeHTML.replace(/^program-$/gm, () => {
     programCount++;
     return `
   <div class="flex justify-end"><button class="bg-gray-300 rounded-md border border-gray-800 px-1" onclick="copyToClipboard('program-${programCount}')">コピー</button></div>
   <pre id="program-${programCount}" class="bg-black text-white p-4 border border-gray-300 rounded-md">`;
   });
-  safeHTML = safeHTML.replace(/-program/g, "</pre>");
+  safeHTML = safeHTML.replace(/^-program$/gm, "</pre>");
 
   return (
     <main>

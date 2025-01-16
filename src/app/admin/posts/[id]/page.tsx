@@ -123,7 +123,7 @@ const Page: React.FC = () => {
       }
     };
     fetchCategories();
-  }, []);
+  }, [id]);
 
   // チェックボックスの状態 (State) を更新する関数
   const switchCategoryState = (categoryId: string) => {
@@ -156,10 +156,10 @@ const Page: React.FC = () => {
   const autoBR = () => {
     const cont = newContent.split("\n");
     const startPres = cont
-      .map((element, index) => (element.includes("program-") ? index : -1))
+      .map((element, index) => (element === "program-" ? index : -1))
       .filter((index) => index !== -1);
     const endPres = cont
-      .map((element, index) => (element.includes("-program") ? index : -1))
+      .map((element, index) => (element === "-program" ? index : -1))
       .filter((index) => index !== -1);
     const pres = startPres.map((start, i) => [start, endPres[i]]);
     setNewContent(
