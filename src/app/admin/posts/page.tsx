@@ -23,9 +23,6 @@ const Page: React.FC = () => {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   // 環境変数から「APIキー」と「エンドポイント」を取得
-  const apiBaseEp = process.env.NEXT_PUBLIC_MICROCMS_BASE_EP!;
-  const apiKey = process.env.NEXT_PUBLIC_MICROCMS_API_KEY!;
-  console.log(apiKey);
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -63,7 +60,7 @@ const Page: React.FC = () => {
       }
     };
     fetchPosts();
-  }, [apiBaseEp, apiKey]);
+  }, []);
 
   const handleDelete = async (
     e: React.MouseEvent<HTMLButtonElement>,
