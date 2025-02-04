@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { twMerge } from "tailwind-merge";
 import DOMPurify from "isomorphic-dompurify";
 import Link from "next/link";
+import { useAuth } from "@/app/_hooks/useAuth";
 
 type CategoryApiResponse = {
   id: string;
@@ -20,6 +21,7 @@ const Page: React.FC = () => {
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const { token } = useAuth(); // トークンの取得
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -72,12 +74,17 @@ const Page: React.FC = () => {
 
     // ▼▼ 追加 ウェブAPI (/api/admin/posts) にPOSTリクエストを送信する処理
     try {
+      if (!token) {
+        window.alert("予期せぬ動作：トークンが取得できません。");
+        return;
+      }
       const requestUrl = `/api/admin/categories/${category.id}`;
       const res = await fetch(requestUrl, {
         method: "DELETE",
         cache: "no-store",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token, // ◀ 追加
         },
       });
 

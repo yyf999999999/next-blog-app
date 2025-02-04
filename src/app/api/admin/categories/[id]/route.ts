@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextResponse, NextRequest } from "next/server";
 import { Category } from "@prisma/client";
+import { supabase } from "@/utils/supabase"; // ◀ 追加
 
 type RouteParams = {
   params: {
@@ -13,6 +14,10 @@ type RequestBody = {
 };
 
 export const PUT = async (req: NextRequest, routeParams: RouteParams) => {
+  const token = req.headers.get("Authorization") ?? "";
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 401 });
   try {
     const id = routeParams.params.id;
     const { name }: RequestBody = await req.json();
@@ -31,6 +36,10 @@ export const PUT = async (req: NextRequest, routeParams: RouteParams) => {
 };
 
 export const DELETE = async (req: NextRequest, routeParams: RouteParams) => {
+  const token = req.headers.get("Authorization") ?? "";
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 401 });
   try {
     const id = routeParams.params.id;
     const category: Category = await prisma.category.delete({ where: { id } });
