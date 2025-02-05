@@ -6,7 +6,7 @@ import { supabase } from "@/utils/supabase"; // ◀ 追加
 type RequestBody = {
   title: string;
   content: string;
-  coverImageURL: string;
+  coverImageKey: string;
   categoryIds: string[];
 };
 
@@ -20,7 +20,7 @@ export const POST = async (req: NextRequest) => {
     const requestBody: RequestBody = await req.json();
 
     // 分割代入
-    const { title, content, coverImageURL, categoryIds } = requestBody;
+    const { title, content, coverImageKey, categoryIds } = requestBody;
 
     // categoryIds で指定されるカテゴリがDB上に存在するか確認
     const categories = await prisma.category.findMany({
@@ -42,7 +42,7 @@ export const POST = async (req: NextRequest) => {
       data: {
         title, // title: title の省略形であることに注意。以下も同様
         content,
-        coverImageURL,
+        coverImageKey,
       },
     });
 

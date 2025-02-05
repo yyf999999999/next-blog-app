@@ -29,7 +29,7 @@ const Page: React.FC = () => {
 
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
-  const [newCoverImageURL, setNewCoverImageURL] = useState("");
+  const [newCoverImageKey, setNewCoverImageKey] = useState("");
 
   const router = useRouter();
 
@@ -108,9 +108,9 @@ const Page: React.FC = () => {
     setNewContent(e.target.value);
   };
 
-  const updateNewCoverImageURL = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // ここにカバーイメージURLのバリデーション処理を追加する
-    setNewCoverImageURL(e.target.value);
+  const updateNewCoverImageKey = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // ここにカバーイメージKeyのバリデーション処理を追加する
+    setNewCoverImageKey(e.target.value);
   };
 
   const autoBR = () => {
@@ -151,7 +151,7 @@ const Page: React.FC = () => {
       const requestBody = {
         title: newTitle,
         content: newContent,
-        coverImageURL: newCoverImageURL,
+        coverImageKey: newCoverImageKey,
         categoryIds: checkableCategories
           ? checkableCategories.filter((c) => c.isSelect).map((c) => c.id)
           : [],
@@ -264,17 +264,17 @@ const Page: React.FC = () => {
           </button>
         </div>
         <div className="space-y-1">
-          <label htmlFor="coverImageURL" className="block font-bold">
-            カバーイメージ (URL)
+          <label htmlFor="coverImageKey" className="block font-bold">
+            カバーイメージ (Key)
           </label>
           <input
             type="url"
-            id="coverImageURL"
-            name="coverImageURL"
+            id="coverImageKey"
+            name="coverImageKey"
             className="w-full rounded-md border-2 px-2 py-1"
-            value={newCoverImageURL}
-            onChange={updateNewCoverImageURL}
-            placeholder="カバーイメージのURLを記入してください"
+            value={newCoverImageKey}
+            onChange={updateNewCoverImageKey}
+            placeholder="カバーイメージのKeyを記入してください"
             required
           />
         </div>

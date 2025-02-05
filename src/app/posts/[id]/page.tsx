@@ -11,6 +11,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import dayjs from "dayjs";
 import { twMerge } from "tailwind-merge";
+import { supabase } from "@/utils/supabase";
 
 import DOMPurify from "isomorphic-dompurify";
 
@@ -18,7 +19,7 @@ type PostApiResponse = {
   id: string;
   title: string;
   content: string;
-  coverImageURL: string;
+  coverImageKey: string;
   createdAt: string;
   updatedAt: string;
   categories: { category: Category }[];
@@ -39,6 +40,7 @@ const Page: React.FC = () => {
   // 動的ルートパラメータから 記事id を取得 （URL:/posts/[id]）
   const { id } = useParams() as { id: string };
   const dtFmt = "YYYY-MM-DD";
+  const Bucket = "cover_image";
 
   // コンポーネントが読み込まれたときに「1回だけ」実行する処理
   useEffect(() => {
@@ -65,7 +67,11 @@ const Page: React.FC = () => {
           id: apiResBody.id,
           title: apiResBody.title,
           content: apiResBody.content,
-          coverImage: { url: apiResBody.coverImageURL, width: 0, height: 0 },
+          coverImage: {
+            key: apiResBody.coverImageKey,
+            width: 1024,
+            height: 1024,
+          },
           createdAt: apiResBody.createdAt,
           categories: apiResBody.categories.map((c) => ({
             id: c.category.id,
@@ -156,7 +162,10 @@ const Page: React.FC = () => {
         <div></div>
         <div>
           <Image
-            src={post.coverImage.url}
+            src={
+              supabase.storage.from(Bucket).getPublicUrl(post.coverImage.key)
+                .data.publicUrl
+            }
             alt="Example Image"
             width={post.coverImage.width}
             height={post.coverImage.height}

@@ -12,7 +12,7 @@ type RouteParams = {
 type RequestBody = {
   title: string;
   content: string;
-  coverImageURL: string;
+  coverImageKey: string;
   categoryIds: string[];
 };
 
@@ -23,7 +23,7 @@ export const PUT = async (req: NextRequest, routeParams: RouteParams) => {
     return NextResponse.json({ error: error.message }, { status: 401 });
   try {
     const id = routeParams.params.id;
-    const { title, content, coverImageURL, categoryIds }: RequestBody =
+    const { title, content, coverImageKey, categoryIds }: RequestBody =
       await req.json();
 
     const categories = await prisma.category.findMany({
@@ -49,7 +49,7 @@ export const PUT = async (req: NextRequest, routeParams: RouteParams) => {
       data: {
         title,
         content,
-        coverImageURL,
+        coverImageKey,
       },
     });
 

@@ -41,7 +41,7 @@ const Page: React.FC = () => {
             id: body.id,
             title: body.title,
             content: body.content,
-            coverImage: { url: "", width: 0, height: 0 },
+            coverImage: { key: "", width: 0, height: 0 },
             createdAt: body.createdAt,
             categories: body.categories.map((c) => ({
               id: c.category.id,
