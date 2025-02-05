@@ -1,7 +1,8 @@
 import prisma from "@/lib/prisma";
 import { NextResponse, NextRequest } from "next/server";
 import { Post } from "@prisma/client";
-import { supabase } from "@/utils/supabase"; // ◀ 追加
+import { supabase } from "@/utils/supabase";
+export const revalidate = 0;
 
 type RequestBody = {
   title: string;
